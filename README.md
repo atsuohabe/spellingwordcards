@@ -151,6 +151,21 @@ export const CONFIG = {
 | スプレッドシートが見つかりません | URL（ID）が違う。または .xlsx のままのファイルを指している（→ Googleスプレッドシートとして保存） |
 | APIキーが正しくない | `apiKey` の値、または Sheets API が有効化されているかを確認 |
 
+## 公開する（GitHub Pages）
+
+公開URL: **https://atsuohabe.github.io/spellingwordcards/**
+
+初回だけ、リポジトリの設定画面で次の操作が必要です。
+
+1. **Settings → Pages** を開く
+2. **Source** で `Deploy from a branch` を選ぶ
+3. **Branch** を `main` / `/ (root)` にして **Save**
+4. 1〜2分待つと上記URLで開けるようになります
+
+以降は `main` が更新されるたびに自動で再公開されます（xlsxをアップロードすると、変換→コミット→再公開まで自動）。
+
+iPhone の Safari で開き、共有ボタン →「ホーム画面に追加」しておくと、アプリのように使えます。
+
 ## iPhone で使うときのメモ
 
 - Safari で開き、共有 →「ホーム画面に追加」でアプリのように全画面で使えます。
