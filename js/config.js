@@ -39,8 +39,12 @@ export const CONFIG = {
   // 読み上げ設定
   speech: {
     lang: 'en-US',
-    rate: 0.7,    // 読み上げの速さ。小さいほどゆっくり（1.0がふつう）
+    rate: 0.6,    // 読み上げの速さ。小さいほどゆっくり（1.0がふつう）
     pitch: 1.0,
+
+    // 使いたい声の名前（上にあるものほど優先）。端末にあるものが自動で選ばれます。
+    // 「(Enhanced)」「Premium」「Neural」などの高品質な声があれば優先します。
+    preferVoices: ['Ava', 'Samantha', 'Allison', 'Google US English', 'Karen'],
   },
 
   // カードを表示したときに自動で1回読み上げる
@@ -48,5 +52,5 @@ export const CONFIG = {
 
   // 次のカードが出てから読み上げるまでの間（ミリ秒）
   // 大きくするとより余裕ができます（1000 = 1秒）
-  autoSpeakDelay: 800,
+  autoSpeakDelay: 1500,
 };

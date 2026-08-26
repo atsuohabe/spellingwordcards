@@ -7,18 +7,38 @@ let unlocked = false;
 
 export const isSupported = !!synth;
 
+/** 高品質な声につく名前（端末によって呼び方が違う） */
+const QUALITY_HINTS = ['enhanced', 'premium', 'neural', 'natural', 'siri'];
+
+/** いちばん聞き取りやすそうな声を選ぶ */
 function pickVoice() {
   if (!synth) return null;
   const voices = synth.getVoices();
   if (!voices.length) return null;
+
   const lang = CONFIG.speech.lang.toLowerCase();
   const base = lang.split('-')[0];
-  return (
-    voices.find((v) => v.lang.toLowerCase() === lang && v.localService) ||
-    voices.find((v) => v.lang.toLowerCase() === lang) ||
-    voices.find((v) => v.lang.toLowerCase().startsWith(base)) ||
-    null
-  );
+  const candidates = voices.filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(base));
+  if (!candidates.length) return null;
+
+  const preferred = (CONFIG.speech.preferVoices || []).map((n) => n.toLowerCase());
+  const rank = (voice) => {
+    const name = voice.name.toLowerCase();
+    let score = 0;
+    if (voice.lang.toLowerCase().replace('_', '-') === lang) score += 100;
+    const order = preferred.findIndex((p) => name.includes(p));
+    if (order >= 0) score += 60 - order;                              // 指定した順に優先
+    if (QUALITY_HINTS.some((hint) => name.includes(hint))) score += 40; // 高品質版があれば優先
+    if (voice.localService) score += 5;                                // 端末内の声は途切れない
+    return score;
+  };
+  return [...candidates].sort((a, b) => rank(b) - rank(a))[0];
+}
+
+/** いま使っている声（設定の確認用） */
+export function currentVoice() {
+  if (!voice) voice = pickVoice();
+  return voice ? { name: voice.name, lang: voice.lang, local: voice.localService } : null;
 }
 
 if (synth) {
@@ -55,7 +75,10 @@ export function speak(text, handlers = {}) {
     u.rate = CONFIG.speech.rate;
     u.pitch = CONFIG.speech.pitch;
     if (!voice) voice = pickVoice();
-    if (voice) u.voice = voice;
+    // 声の割り当てに失敗しても、既定の声で必ず再生されるようにする
+    if (voice) {
+      try { u.voice = voice; } catch (_) { voice = null; }
+    }
     if (handlers.onStart) u.onstart = handlers.onStart;
     if (handlers.onEnd) {
       u.onend = handlers.onEnd;
