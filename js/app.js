@@ -1,7 +1,7 @@
-import { CONFIG, APP_VERSION } from './config.js?v=2026-08-27c';
-import { listSheets, loadCards } from './data.js?v=2026-08-27c';
-import { lastChoice, session, speed } from './storage.js?v=2026-08-27c';
-import * as speech from './speech.js?v=2026-08-27c';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-08-27f';
+import { listSheets, loadCards } from './data.js?v=2026-08-27f';
+import { lastChoice, session, speed } from './storage.js?v=2026-08-27f';
+import * as speech from './speech.js?v=2026-08-27f';
 
 const $ = (id) => document.getElementById(id);
 
@@ -119,7 +119,8 @@ function setSpeed(rate, { preview = false } = {}) {
   updateVoiceInfo();
   if (preview) {
     speech.unlock();
-    speech.speak('apple');   // 選んだ速さをその場で確かめられるように
+    // 1単語だと速さの違いが分かりにくいので、短い文で試聴する
+    speech.speak('This is how fast I read.');
   }
 }
 

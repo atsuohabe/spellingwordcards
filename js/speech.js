@@ -1,10 +1,11 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js?v=2026-08-27c';
+import { CONFIG } from './config.js?v=2026-08-27f';
 
 const synth = window.speechSynthesis;
 let voice = null;
 let unlocked = false;
 let rateOverride = null;   // 画面で選ばれた速さ（未選択なら config の値を使う）
+let requestId = 0;         // 最後に頼まれた再生だけを鳴らすための番号
 
 export const isSupported = !!synth;
 
@@ -99,24 +100,42 @@ export function unlock() {
  */
 export function speak(text, handlers = {}) {
   if (!synth || !text) return;
+
+  const rate = getRate();   // 待ってから鳴らす場合も、押したときの速さで再生する
+  const id = ++requestId;
+  const start = () => {
+    if (id !== requestId) return;   // 待っている間に次の再生を頼まれていたら、古い方はやめる
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = CONFIG.speech.lang;
+      u.rate = rate;
+      u.pitch = CONFIG.speech.pitch;
+      if (!voice) voice = pickVoice();
+      // 端末の既定の声はあえて指定しない。
+      // iOS では voice を明示すると rate が効かないことがあるため。
+      if (voice && !voice.default) {
+        try { u.voice = voice; } catch (_) { voice = null; }
+      }
+      if (handlers.onStart) u.onstart = handlers.onStart;
+      if (handlers.onEnd) {
+        u.onend = handlers.onEnd;
+        u.onerror = handlers.onEnd;
+      }
+      // iOS は cancel のあと一時停止状態のまま残ることがある
+      if (synth.paused) synth.resume();
+      synth.speak(u);
+    } catch (_) { /* 端末が対応していない場合は無視 */ }
+  };
+
   try {
-    synth.cancel(); // 連打しても重ならないように
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = CONFIG.speech.lang;
-    u.rate = getRate();
-    u.pitch = CONFIG.speech.pitch;
-    if (!voice) voice = pickVoice();
-    // 声の割り当てに失敗しても、既定の声で必ず再生されるようにする
-    if (voice) {
-      try { u.voice = voice; } catch (_) { voice = null; }
+    if (synth.speaking || synth.pending) {
+      // iOS は cancel した直後の speak を取りこぼすので、少し待ってから鳴らす
+      synth.cancel();
+      setTimeout(start, 150);
+    } else {
+      start();
     }
-    if (handlers.onStart) u.onstart = handlers.onStart;
-    if (handlers.onEnd) {
-      u.onend = handlers.onEnd;
-      u.onerror = handlers.onEnd;
-    }
-    synth.speak(u);
-  } catch (_) { /* 端末が対応していない場合は無視 */ }
+  } catch (_) { /* noop */ }
 }
 
 export function stop() {
