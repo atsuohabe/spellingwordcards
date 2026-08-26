@@ -32,8 +32,13 @@ const el = {
   doneDetail: $('done-detail'),
 };
 
+/** カードがめくれ終わるまでの時間（css の .card transition と合わせる） */
+const FLIP_MS = 350;
+
 /** 学習中の状態 */
 let state = null;
+/** 予約中の処理（読み上げ・表示の切り替え） */
+let timers = [];
 /** ホームでの選択 */
 let selected = { sheetId: null, sheetName: null, mode: 'order' };
 
@@ -176,16 +181,35 @@ function currentCard() {
   return state?.queue[0] || null;
 }
 
-function showCard({ speak: doSpeak } = {}) {
+function later(fn, ms) {
+  timers.push(setTimeout(fn, ms));
+}
+
+/** 予約ずみの読み上げ・表示をとりやめる（連打や中断のとき） */
+function cancelPending() {
+  timers.forEach(clearTimeout);
+  timers = [];
+}
+
+function showCard({ speak: doSpeak = false, afterFlip = false } = {}) {
+  cancelPending();
+  speech.stop();
+
   const card = currentCard();
   if (!card) return finish();
 
   setFlipped(false);
-  el.cardWord.textContent = card.word;
-  el.cardJa.textContent = card.ja || '';
-  el.cardJa.hidden = !card.ja;
+  const render = () => {
+    el.cardWord.textContent = card.word;
+    el.cardJa.textContent = card.ja || '';
+    el.cardJa.hidden = !card.ja;
+  };
+  // 裏返っている途中に次の単語が見えてしまわないよう、半分回ってから差し替える
+  if (afterFlip) later(render, FLIP_MS / 2);
+  else render();
+
   updateProgress();
-  if (doSpeak) speakCurrent();
+  if (doSpeak) later(speakCurrent, CONFIG.autoSpeakDelay);
 }
 
 function setFlipped(flipped) {
@@ -223,18 +247,11 @@ function answer(known) {
   session.set(state);
 
   if (!state.queue.length) return finish();
-
-  // iOS では「タップの流れの中」で再生すると確実に音が出る
-  if (CONFIG.autoSpeak) {
-    setFlipped(false);
-    speakCurrent();
-    setTimeout(() => showCard(), 180);
-  } else {
-    showCard();
-  }
+  showCard({ speak: CONFIG.autoSpeak, afterFlip: true });
 }
 
 function finish() {
+  cancelPending();
   speech.stop();
   session.clear();
   el.doneDetail.textContent = `${state.sheetName} / ${state.total} まい`;
@@ -242,6 +259,7 @@ function finish() {
 }
 
 function quitStudy() {
+  cancelPending();
   speech.stop();
   session.set(state); // 途中でやめても「つづきから」で戻れる
   state = null;
@@ -254,8 +272,12 @@ el.modeBtns.forEach((btn) => btn.addEventListener('click', () => setMode(btn.dat
 el.startBtn.addEventListener('click', startStudy);
 el.resumeBtn.addEventListener('click', resumeStudy);
 el.quitBtn.addEventListener('click', quitStudy);
-el.speakBtn.addEventListener('click', (e) => { e.stopPropagation(); speech.unlock(); speakCurrent(); });
-el.speakBtnBack.addEventListener('click', (e) => { e.stopPropagation(); speakCurrent(); });
+el.speakBtn.addEventListener('click', (e) => {
+  e.stopPropagation(); cancelPending(); speech.unlock(); speakCurrent();
+});
+el.speakBtnBack.addEventListener('click', (e) => {
+  e.stopPropagation(); cancelPending(); speakCurrent();
+});
 el.flipBtn.addEventListener('click', () => setFlipped(true));
 el.card.addEventListener('click', () => { if (!el.card.classList.contains('is-flipped')) setFlipped(true); });
 el.yesBtn.addEventListener('click', () => answer(true));
