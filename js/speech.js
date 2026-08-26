@@ -1,5 +1,5 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js?v=2026-08-27f';
+import { CONFIG } from './config.js?v=2026-08-27g';
 
 const synth = window.speechSynthesis;
 let voice = null;
@@ -107,15 +107,16 @@ export function speak(text, handlers = {}) {
     if (id !== requestId) return;   // 待っている間に次の再生を頼まれていたら、古い方はやめる
     try {
       const u = new SpeechSynthesisUtterance(text);
+      if (!voice) voice = pickVoice();
+      // 声を先に決めてから、速さを設定する。
+      // WebKit では voice を代入したときに rate が既定値へ戻ることがあるため、
+      // 順序を逆にすると「声は合っているのに速さが効かない」状態になる。
+      if (voice) {
+        try { u.voice = voice; } catch (_) { voice = null; }
+      }
       u.lang = CONFIG.speech.lang;
       u.rate = rate;
       u.pitch = CONFIG.speech.pitch;
-      if (!voice) voice = pickVoice();
-      // 端末の既定の声はあえて指定しない。
-      // iOS では voice を明示すると rate が効かないことがあるため。
-      if (voice && !voice.default) {
-        try { u.voice = voice; } catch (_) { voice = null; }
-      }
       if (handlers.onStart) u.onstart = handlers.onStart;
       if (handlers.onEnd) {
         u.onend = handlers.onEnd;
