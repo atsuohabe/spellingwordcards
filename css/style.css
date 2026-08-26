@@ -116,8 +116,36 @@ body {
 .btn-start { margin-top: 28px; }
 
 .loading, .error { color: var(--sub); text-align: center; font-size: 15px; }
+.settings {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 2px solid var(--line);
+}
+.settings-label {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--sub);
+  text-align: center;
+}
+.speed-row { display: flex; gap: 8px; }
+.speed-btn {
+  flex: 1;
+  min-height: 48px;
+  padding: 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--sub);
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  white-space: nowrap;
+}
+.speed-btn.is-on { border-color: var(--blue); background: #eaf4ff; color: var(--blue-dark); }
+.speed-btn:active { transform: scale(0.97); }
+
 .voice-info {
-  margin: 28px 0 0;
+  margin: 14px 0 0;
   text-align: center;
   font-size: 12px;
   color: #a9b6c5;

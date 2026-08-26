@@ -1,7 +1,7 @@
-import { CONFIG, APP_VERSION } from './config.js?v=2026-08-27b';
-import { listSheets, loadCards } from './data.js?v=2026-08-27b';
-import { lastChoice, session } from './storage.js?v=2026-08-27b';
-import * as speech from './speech.js?v=2026-08-27b';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-08-27c';
+import { listSheets, loadCards } from './data.js?v=2026-08-27c';
+import { lastChoice, session, speed } from './storage.js?v=2026-08-27c';
+import * as speech from './speech.js?v=2026-08-27c';
 
 const $ = (id) => document.getElementById(id);
 
@@ -12,6 +12,7 @@ const el = {
   startBtn: $('start-btn'),
   homeError: $('home-error'),
   voiceInfo: $('voice-info'),
+  speedBtns: document.querySelectorAll('.speed-btn'),
   resumeBox: $('resume-box'),
   resumeInfo: $('resume-info'),
   resumeBtn: $('resume-btn'),
@@ -108,6 +109,23 @@ function renderResume(sheets) {
   }
   el.resumeBox.hidden = false;
   el.resumeInfo.textContent = `${saved.sheetName} — ${saved.queue.length} cards left`;
+}
+
+/** 読み上げの速さ（トップページ下部の設定） */
+function setSpeed(rate, { preview = false } = {}) {
+  speech.setRate(rate);
+  speed.set(rate);
+  el.speedBtns.forEach((b) => b.classList.toggle('is-on', Number(b.dataset.rate) === rate));
+  updateVoiceInfo();
+  if (preview) {
+    speech.unlock();
+    speech.speak('apple');   // 選んだ速さをその場で確かめられるように
+  }
+}
+
+function updateVoiceInfo() {
+  const v = speech.currentVoice();
+  el.voiceInfo.textContent = `v${APP_VERSION} · 🔊 ${v ? v.name : 'default voice'} · speed ${speech.getRate()}`;
 }
 
 function showError(message) {
@@ -264,11 +282,19 @@ function quitStudy() {
   speech.stop();
   session.set(state); // 途中でやめても「つづきから」で戻れる
   state = null;
-  // いま読み込まれている版と、実際に使われる声を画面の下に出す（設定の確認用）
-speech.onVoiceChange((v) => {
-  const name = v ? v.name : 'default voice';
-  el.voiceInfo.textContent = `v${APP_VERSION} · 🔊 ${name} · speed ${CONFIG.speech.rate}`;
+  el.speedBtns.forEach((btn) => {
+  btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
 });
+
+// iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) speech.refreshVoice();
+});
+window.addEventListener('pageshow', () => speech.refreshVoice());
+
+// いま読み込まれている版と、実際に使われる声・速さを画面の下に出す（設定の確認用）
+speech.onVoiceChange(updateVoiceInfo);
+setSpeed(speed.get() ?? CONFIG.speech.rate);
 
 initHome();
 }
@@ -290,18 +316,34 @@ el.card.addEventListener('click', () => { if (!el.card.classList.contains('is-fl
 el.yesBtn.addEventListener('click', () => answer(true));
 el.noBtn.addEventListener('click', () => answer(false));
 el.againBtn.addEventListener('click', () => { selected.sheetId = state.sheetId; selected.sheetName = state.sheetName; startStudy(); });
-el.homeBtn.addEventListener('click', () => { state = null; // いま読み込まれている版と、実際に使われる声を画面の下に出す（設定の確認用）
-speech.onVoiceChange((v) => {
-  const name = v ? v.name : 'default voice';
-  el.voiceInfo.textContent = `v${APP_VERSION} · 🔊 ${name} · speed ${CONFIG.speech.rate}`;
+el.homeBtn.addEventListener('click', () => { state = null; el.speedBtns.forEach((btn) => {
+  btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
 });
+
+// iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) speech.refreshVoice();
+});
+window.addEventListener('pageshow', () => speech.refreshVoice());
+
+// いま読み込まれている版と、実際に使われる声・速さを画面の下に出す（設定の確認用）
+speech.onVoiceChange(updateVoiceInfo);
+setSpeed(speed.get() ?? CONFIG.speech.rate);
 
 initHome(); });
 
-// いま読み込まれている版と、実際に使われる声を画面の下に出す（設定の確認用）
-speech.onVoiceChange((v) => {
-  const name = v ? v.name : 'default voice';
-  el.voiceInfo.textContent = `v${APP_VERSION} · 🔊 ${name} · speed ${CONFIG.speech.rate}`;
+el.speedBtns.forEach((btn) => {
+  btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
 });
+
+// iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) speech.refreshVoice();
+});
+window.addEventListener('pageshow', () => speech.refreshVoice());
+
+// いま読み込まれている版と、実際に使われる声・速さを画面の下に出す（設定の確認用）
+speech.onVoiceChange(updateVoiceInfo);
+setSpeed(speed.get() ?? CONFIG.speech.rate);
 
 initHome();

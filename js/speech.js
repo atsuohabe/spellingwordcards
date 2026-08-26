@@ -1,9 +1,10 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js?v=2026-08-27b';
+import { CONFIG } from './config.js?v=2026-08-27c';
 
 const synth = window.speechSynthesis;
 let voice = null;
 let unlocked = false;
+let rateOverride = null;   // 画面で選ばれた速さ（未選択なら config の値を使う）
 
 export const isSupported = !!synth;
 
@@ -55,6 +56,22 @@ export function onVoiceChange(callback) {
   callback(currentVoice());
 }
 
+/** 声を選び直す（iPhoneの設定を変えて戻ってきたときなど） */
+export function refreshVoice() {
+  const before = voice;
+  voice = pickVoice();
+  if (voice !== before) notify();
+}
+
+/** 読み上げの速さを変える */
+export function setRate(rate) {
+  rateOverride = rate;
+}
+
+export function getRate() {
+  return rateOverride ?? CONFIG.speech.rate;
+}
+
 if (synth) {
   voice = pickVoice();
   // iOS / Chrome は音声リストが非同期で届く。あとから増えることもある
@@ -86,7 +103,7 @@ export function speak(text, handlers = {}) {
     synth.cancel(); // 連打しても重ならないように
     const u = new SpeechSynthesisUtterance(text);
     u.lang = CONFIG.speech.lang;
-    u.rate = CONFIG.speech.rate;
+    u.rate = getRate();
     u.pitch = CONFIG.speech.pitch;
     if (!voice) voice = pickVoice();
     // 声の割り当てに失敗しても、既定の声で必ず再生されるようにする

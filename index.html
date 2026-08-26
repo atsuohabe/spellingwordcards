@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Word Cards">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=2026-08-27b">
+<link rel="stylesheet" href="css/style.css?v=2026-08-27c">
 <title>Word Cards</title>
 </head>
 <body>
@@ -37,7 +37,17 @@
 
   <button id="start-btn" class="btn btn-primary btn-start" disabled>Start 🚀</button>
   <p id="home-error" class="error" hidden></p>
-  <p id="voice-info" class="voice-info"></p>
+
+  <div class="settings">
+    <p class="settings-label">🔊 Speed</p>
+    <div id="speed-row" class="speed-row">
+      <button class="speed-btn" data-rate="0.7">🐢 0.7×</button>
+      <button class="speed-btn" data-rate="0.8">0.8×</button>
+      <button class="speed-btn" data-rate="0.9">0.9×</button>
+      <button class="speed-btn" data-rate="1">🐇 1×</button>
+    </div>
+    <p id="voice-info" class="voice-info"></p>
+  </div>
 </section>
 
 <!-- ========== 学習 ========== -->
@@ -83,6 +93,6 @@
   </div>
 </section>
 
-<script type="module" src="js/app.js?v=2026-08-27b"></script>
+<script type="module" src="js/app.js?v=2026-08-27c"></script>
 </body>
 </html>

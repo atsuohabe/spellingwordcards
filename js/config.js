@@ -11,7 +11,7 @@
  *   3. apiKey にAPIキーを貼る
  */
 /** 公開した版がちゃんと読み込まれているか確認するための番号（画面の下に出ます） */
-export const APP_VERSION = '2026-08-27b';
+export const APP_VERSION = '2026-08-27c';
 
 export const CONFIG = {
   source: 'local',

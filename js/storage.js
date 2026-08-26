@@ -28,6 +28,12 @@ export const lastChoice = {
   set: (sheetId, mode) => write('lastChoice', { sheetId, mode }),
 };
 
+/** トップページで選んだ読み上げの速さ */
+export const speed = {
+  get: () => read('speed'),
+  set: (rate) => write('speed', rate),
+};
+
 /** 学習の途中状態（リロード・アプリ再訪時の「つづきから」用） */
 export const session = {
   get: () => read('session'),
