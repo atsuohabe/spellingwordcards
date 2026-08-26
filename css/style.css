@@ -1,0 +1,242 @@
+/* えいごカード — 小学生向け / iPhone ファースト */
+:root {
+  --bg: #f3f7fb;
+  --card: #ffffff;
+  --ink: #1f2a37;
+  --sub: #6b7a8d;
+  --blue: #3aa0ff;
+  --blue-dark: #2b7fd4;
+  --green: #34c759;
+  --red: #ff6b6b;
+  --line: #dfe7f0;
+  --radius: 20px;
+  --tap: 60px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Maru Gothic ProN",
+               "Hiragino Sans", "Yu Gothic", sans-serif;
+  overscroll-behavior: none;
+}
+
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+/* ---------- ホーム ---------- */
+#view-home { padding: 16px 16px 40px; max-width: 560px; margin: 0 auto; }
+
+.app-title {
+  font-size: 28px;
+  text-align: center;
+  margin: 12px 0 20px;
+}
+
+.section-title {
+  font-size: 17px;
+  color: var(--sub);
+  margin: 24px 0 10px;
+}
+
+.resume {
+  background: #fff8e1;
+  border: 2px solid #ffd54f;
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+}
+.resume-label { margin: 0 0 4px; font-size: 14px; color: #a07b12; }
+.resume-info { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
+
+.sheet-list { display: flex; flex-direction: column; gap: 10px; }
+
+.sheet-btn {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--card);
+  border: 3px solid var(--line);
+  border-radius: var(--radius);
+  text-align: left;
+}
+.sheet-btn.is-on {
+  border-color: var(--blue);
+  background: #eaf4ff;
+}
+.sheet-btn .check { font-size: 22px; opacity: 0; }
+.sheet-btn.is-on .check { opacity: 1; }
+
+.mode-row { display: flex; gap: 10px; }
+.mode-btn {
+  flex: 1;
+  min-height: var(--tap);
+  font-size: 19px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--sub);
+  background: var(--card);
+  border: 3px solid var(--line);
+  border-radius: var(--radius);
+}
+.mode-btn.is-on { border-color: var(--blue); background: #eaf4ff; color: var(--blue-dark); }
+
+.btn {
+  min-height: var(--tap);
+  width: 100%;
+  font-size: 21px;
+  font-weight: 800;
+  font-family: inherit;
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--blue); box-shadow: 0 4px 0 var(--blue-dark); }
+.btn-primary:disabled { background: #c3d3e2; box-shadow: none; }
+.btn-sub { background: #fff; color: var(--sub); border: 3px solid var(--line); margin-top: 10px; }
+.btn-start { margin-top: 28px; }
+
+.loading, .error { color: var(--sub); text-align: center; font-size: 15px; }
+.error { color: var(--red); white-space: pre-wrap; }
+
+/* ---------- 学習 ---------- */
+#view-study.is-active {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding: 8px 16px 16px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.topbar { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.topbar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  color: var(--sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-plain {
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--sub);
+  background: none;
+  border: none;
+  padding: 8px 4px;
+}
+.progress { font-size: 15px; color: var(--sub); font-variant-numeric: tabular-nums; }
+
+.progress-bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+#progress-fill { height: 100%; width: 0; background: var(--green); transition: width .2s; }
+
+.card-area { flex: 1; display: flex; align-items: center; perspective: 1200px; padding: 16px 0; }
+
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  transform-style: preserve-3d;
+  transition: transform .35s ease;
+}
+.card.is-flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  background: var(--card);
+  border-radius: 28px;
+  box-shadow: 0 6px 18px rgba(31, 42, 55, .12);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.card-back { transform: rotateY(180deg); }
+
+.speak-btn {
+  width: 140px;
+  height: 140px;
+  font-size: 64px;
+  line-height: 1;
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--blue);
+  box-shadow: 0 6px 0 var(--blue-dark);
+}
+.speak-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--blue-dark); }
+.speak-btn.is-speaking { animation: pulse .6s ease infinite alternate; }
+@keyframes pulse { to { transform: scale(1.06); } }
+
+.card-hint { color: var(--sub); font-size: 16px; margin: 0; }
+
+.speak-mini {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 52px;
+  height: 52px;
+  font-size: 26px;
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--blue);
+}
+
+.card-word {
+  margin: 0;
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-align: center;
+  word-break: break-word;
+  font-family: -apple-system, "SF Pro Rounded", "Helvetica Neue", sans-serif;
+}
+.card-ja { margin: 0; font-size: 22px; color: var(--sub); text-align: center; }
+
+.action-area { display: flex; flex-direction: column; gap: 10px; }
+.btn-flip { background: #6c7ae0; box-shadow: 0 4px 0 #5462c4; }
+.answer-row { display: flex; gap: 12px; }
+.answer-row .btn { flex: 1; }
+.btn-no { background: var(--red); box-shadow: 0 4px 0 #d9534f; }
+.btn-yes { background: var(--green); box-shadow: 0 4px 0 #26a344; }
+
+/* ---------- おわり ---------- */
+#view-done.is-active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  padding: 24px;
+}
+.done-box { width: 100%; max-width: 420px; text-align: center; }
+.done-emoji { font-size: 76px; margin: 0; }
+.done-text { font-size: 26px; font-weight: 800; margin: 8px 0; }
+.done-detail { color: var(--sub); margin: 0 0 24px; }

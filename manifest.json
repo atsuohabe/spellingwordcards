@@ -1,0 +1,9 @@
+{
+  "name": "えいごカード",
+  "short_name": "えいごカード",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f3f7fb",
+  "theme_color": "#3aa0ff",
+  "icons": []
+}
