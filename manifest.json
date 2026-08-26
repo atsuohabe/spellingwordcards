@@ -1,6 +1,6 @@
 {
-  "name": "えいごカード",
-  "short_name": "えいごカード",
+  "name": "Word Cards",
+  "short_name": "Word Cards",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#f3f7fb",

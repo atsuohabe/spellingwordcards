@@ -64,14 +64,14 @@ async function initHome() {
     renderResume(sheets);
   } catch (err) {
     el.sheetList.innerHTML = '';
-    showError(`リストを よみこめませんでした。\n${err.message}`);
+    showError(`Sorry, the lists did not load.\n${err.message}`);
   }
 }
 
 function renderSheetList(sheets, savedSheetId) {
   el.sheetList.innerHTML = '';
   if (!sheets.length) {
-    el.sheetList.innerHTML = '<p class="loading">シートが ありません</p>';
+    el.sheetList.innerHTML = '<p class="loading">No word lists yet</p>';
     return;
   }
   for (const sheet of sheets) {
@@ -106,7 +106,7 @@ function renderResume(sheets) {
     return;
   }
   el.resumeBox.hidden = false;
-  el.resumeInfo.textContent = `${saved.sheetName} — のこり ${saved.queue.length} まい`;
+  el.resumeInfo.textContent = `${saved.sheetName} — ${saved.queue.length} cards left`;
 }
 
 function showError(message) {
@@ -138,10 +138,10 @@ async function startStudy() {
   if (!selected.sheetId) return;
   speech.unlock();
   el.startBtn.disabled = true;
-  el.startBtn.textContent = 'よみこみちゅう…';
+  el.startBtn.textContent = 'Loading…';
   try {
     const cards = await loadCards(selected.sheetId);
-    if (!cards.length) throw new Error('たんごが ありませんでした');
+    if (!cards.length) throw new Error('This list has no words');
     state = {
       sheetId: selected.sheetId,
       sheetName: selected.sheetName,
@@ -154,10 +154,10 @@ async function startStudy() {
     session.set(state);
     enterStudy();
   } catch (err) {
-    showError(`よみこめませんでした。\n${err.message}`);
+    showError(`Sorry, the words did not load.\n${err.message}`);
   } finally {
     el.startBtn.disabled = false;
-    el.startBtn.textContent = 'はじめる 🚀';
+    el.startBtn.textContent = 'Start 🚀';
   }
 }
 
@@ -220,7 +220,7 @@ function setFlipped(flipped) {
 
 function updateProgress() {
   const remaining = state.queue.length;
-  el.progress.textContent = `のこり ${remaining}`;
+  el.progress.textContent = `${remaining} left`;
   const done = Math.max(0, state.total - remaining);
   el.progressFill.style.width = `${Math.round((done / state.total) * 100)}%`;
 }
@@ -254,7 +254,7 @@ function finish() {
   cancelPending();
   speech.stop();
   session.clear();
-  el.doneDetail.textContent = `${state.sheetName} / ${state.total} まい`;
+  el.doneDetail.textContent = `${state.sheetName} · ${state.total} cards`;
   showView('done');
 }
 

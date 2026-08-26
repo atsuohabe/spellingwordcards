@@ -1,48 +1,48 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#3aa0ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="えいごカード">
+<meta name="apple-mobile-web-app-title" content="Word Cards">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
-<title>えいごカード</title>
+<title>Word Cards</title>
 </head>
 <body>
 
 <!-- ========== ホーム ========== -->
 <section id="view-home" class="view is-active">
-  <h1 class="app-title">📚 えいごカード</h1>
+  <h1 class="app-title">📚 Word Cards</h1>
 
   <div id="resume-box" class="resume" hidden>
-    <p class="resume-label">まえの つづき</p>
+    <p class="resume-label">Last time</p>
     <p id="resume-info" class="resume-info"></p>
-    <button id="resume-btn" class="btn btn-primary">▶️ つづきから</button>
+    <button id="resume-btn" class="btn btn-primary">▶️ Keep going</button>
   </div>
 
-  <h2 class="section-title">1. どれを べんきょうする？</h2>
+  <h2 class="section-title">1. Pick a list</h2>
   <div id="sheet-list" class="sheet-list">
-    <p class="loading">よみこみちゅう…</p>
+    <p class="loading">Loading…</p>
   </div>
 
-  <h2 class="section-title">2. じゅんばん</h2>
+  <h2 class="section-title">2. Order</h2>
   <div class="mode-row">
-    <button class="mode-btn is-on" data-mode="order">🔢 じゅんばん</button>
-    <button class="mode-btn" data-mode="random">🎲 ランダム</button>
+    <button class="mode-btn is-on" data-mode="order">🔢 In order</button>
+    <button class="mode-btn" data-mode="random">🎲 Shuffle</button>
   </div>
 
-  <button id="start-btn" class="btn btn-primary btn-start" disabled>はじめる 🚀</button>
+  <button id="start-btn" class="btn btn-primary btn-start" disabled>Start 🚀</button>
   <p id="home-error" class="error" hidden></p>
 </section>
 
 <!-- ========== 学習 ========== -->
 <section id="view-study" class="view">
   <header class="topbar">
-    <button id="quit-btn" class="btn-plain">← やめる</button>
+    <button id="quit-btn" class="btn-plain">← Stop</button>
     <span id="sheet-name" class="topbar-title"></span>
     <span id="progress" class="progress">0 / 0</span>
   </header>
@@ -51,11 +51,11 @@
   <div class="card-area">
     <div id="card" class="card">
       <div class="card-face card-front">
-        <button id="speak-btn" class="speak-btn" aria-label="はつおんを きく">🔊</button>
-        <p class="card-hint">タップして きいてね</p>
+        <button id="speak-btn" class="speak-btn" aria-label="Play the word">🔊</button>
+        <p class="card-hint">Tap to listen</p>
       </div>
       <div class="card-face card-back">
-        <button id="speak-btn-back" class="speak-mini" aria-label="はつおんを きく">🔊</button>
+        <button id="speak-btn-back" class="speak-mini" aria-label="Play the word">🔊</button>
         <p id="card-word" class="card-word"></p>
         <p id="card-ja" class="card-ja"></p>
       </div>
@@ -63,10 +63,10 @@
   </div>
 
   <div class="action-area">
-    <button id="flip-btn" class="btn btn-flip">めくる 🔄</button>
+    <button id="flip-btn" class="btn btn-flip">Flip it 🔄</button>
     <div id="answer-row" class="answer-row" hidden>
-      <button id="no-btn" class="btn btn-no">🔁 まだ</button>
-      <button id="yes-btn" class="btn btn-yes">⭕️ おぼえた</button>
+      <button id="no-btn" class="btn btn-no">🔁 Not yet</button>
+      <button id="yes-btn" class="btn btn-yes">⭕️ I know it</button>
     </div>
   </div>
 </section>
@@ -75,10 +75,10 @@
 <section id="view-done" class="view">
   <div class="done-box">
     <p class="done-emoji">🎉</p>
-    <p class="done-text">ぜんぶ おぼえたね！</p>
+    <p class="done-text">You know them all!</p>
     <p id="done-detail" class="done-detail"></p>
-    <button id="again-btn" class="btn btn-primary">🔁 もういちど</button>
-    <button id="home-btn" class="btn btn-sub">🏠 ホームへ</button>
+    <button id="again-btn" class="btn btn-primary">🔁 Again</button>
+    <button id="home-btn" class="btn btn-sub">🏠 Home</button>
   </div>
 </section>
 
