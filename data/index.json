@@ -1,6 +1,12 @@
 {
   "sheets": [
-    { "id": "week01", "name": "Week 01" },
-    { "id": "week02", "name": "Week 02" }
+    {
+      "id": "vol1",
+      "name": "Vol.1"
+    },
+    {
+      "id": "vol2",
+      "name": "Vol.2"
+    }
   ]
 }

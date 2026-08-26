@@ -1,9 +1,0 @@
-{
-  "cards": [
-    { "word": "apple",  "ja": "りんご" },
-    { "word": "banana", "ja": "バナナ" },
-    { "word": "orange", "ja": "オレンジ" },
-    { "word": "grape",  "ja": "ぶどう" },
-    { "word": "peach",  "ja": "もも" }
-  ]
-}

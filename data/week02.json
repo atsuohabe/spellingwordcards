@@ -1,9 +1,0 @@
-{
-  "cards": [
-    { "word": "dog",    "ja": "いぬ" },
-    { "word": "cat",    "ja": "ねこ" },
-    { "word": "rabbit", "ja": "うさぎ" },
-    { "word": "monkey", "ja": "さる" },
-    { "word": "elephant", "ja": "" }
-  ]
-}

@@ -7,26 +7,68 @@
  */
 import { CONFIG } from './config.js';
 
-const WORD_KEYS = ['word', 'english', 'spelling', 'eng', '英語', 'えいご', 'たんご', '単語', 'スペル'];
-const JA_KEYS = ['ja', 'japanese', 'jp', 'meaning', '日本語', 'にほんご', '訳', 'いみ', '意味'];
+const WORD_KEYS = ['word', 'words', 'english', 'spelling', 'eng', '英語', 'えいご', 'たんご', '単語', 'スペル'];
+const JA_KEYS = ['ja', 'japanese', 'jp', 'translation', 'meaning', 'mean',
+                 '日本語', 'にほんご', '訳', 'やく', 'いみ', '意味', 'ほんやく', '翻訳'];
 
 function normalizeHeader(h) {
   return String(h ?? '').trim().toLowerCase();
 }
 
-/** ヘッダー行から「英語」「日本語」列の位置を決める（見つからなければ 1列目/2列目） */
-function detectColumns(headers) {
+/** 値が英単語らしいか（ASCIIの英字が中心か） */
+function looksEnglish(value) {
+  const v = String(value ?? '').trim();
+  return !!v && /^[A-Za-z][A-Za-z'’\- ]*$/.test(v);
+}
+
+/** 値に日本語（かな・漢字）が含まれるか */
+function looksJapanese(value) {
+  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(String(value ?? ''));
+}
+
+/** 列ごとに、条件に当てはまる行の割合を数える */
+function ratio(rows, index, test) {
+  const values = rows.map((r) => r[index]).filter((v) => String(v ?? '').trim() !== '');
+  if (!values.length) return 0;
+  return values.filter(test).length / values.length;
+}
+
+/**
+ * 「英語」「日本語」列の位置を決める。
+ * 1) ヘッダー名で判定 → 2) 中身で判定（No. のような番号列を拾わないように）
+ */
+function detectColumns(headers, rows) {
   const norm = headers.map(normalizeHeader);
   let word = norm.findIndex((h) => WORD_KEYS.includes(h));
   let ja = norm.findIndex((h) => JA_KEYS.includes(h));
-  if (word < 0) word = 0;
-  if (ja < 0) ja = word === 0 ? 1 : 0;
+  const columnCount = Math.max(headers.length, ...rows.map((r) => r.length), 0);
+
+  if (word < 0) {
+    let best = -1;
+    let bestScore = 0;
+    for (let i = 0; i < columnCount; i++) {
+      if (i === ja) continue;
+      const score = ratio(rows, i, looksEnglish);
+      if (score > bestScore) { bestScore = score; best = i; }
+    }
+    word = bestScore >= 0.5 ? best : 0;
+  }
+  if (ja < 0) {
+    let best = -1;
+    let bestScore = 0;
+    for (let i = 0; i < columnCount; i++) {
+      if (i === word) continue;
+      const score = ratio(rows, i, looksJapanese);
+      if (score > bestScore) { bestScore = score; best = i; }
+    }
+    ja = bestScore >= 0.5 ? best : -1; // 見つからなければ訳なし（裏面は英語だけ）
+  }
   return { word, ja };
 }
 
 /** 行の配列 -> カード配列。空行・重複は捨てる */
 function rowsToCards(headers, rows) {
-  const col = detectColumns(headers);
+  const col = detectColumns(headers, rows);
   const seen = new Set();
   const cards = [];
   for (const row of rows) {
@@ -35,7 +77,7 @@ function rowsToCards(headers, rows) {
     const key = word.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    cards.push({ word, ja: String(row[col.ja] ?? '').trim() });
+    cards.push({ word, ja: col.ja < 0 ? '' : String(row[col.ja] ?? '').trim() });
   }
   return cards;
 }
