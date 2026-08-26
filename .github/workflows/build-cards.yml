@@ -1,0 +1,39 @@
+# マスタ（spellingwordcards.xlsx）をアップロードすると、
+# アプリが読む data/*.json を自動で作り直してコミットします。
+name: Build cards from xlsx
+
+on:
+  push:
+    paths:
+      - '**.xlsx'
+      - 'tools/xlsx_to_json.py'
+      - '.github/workflows/build-cards.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-cards-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: xlsx を JSON に変換
+        run: python3 tools/xlsx_to_json.py
+
+      - name: 変更があればコミット
+        run: |
+          if git diff --quiet -- data; then
+            echo "単語に変更はありませんでした"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git commit -m "マスタから単語カードを更新 [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
