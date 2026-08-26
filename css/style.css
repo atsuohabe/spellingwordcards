@@ -116,6 +116,13 @@ body {
 .btn-start { margin-top: 28px; }
 
 .loading, .error { color: var(--sub); text-align: center; font-size: 15px; }
+.voice-info {
+  margin: 28px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: #a9b6c5;
+  word-break: break-word;
+}
 .error { color: var(--red); white-space: pre-wrap; }
 
 /* ---------- 学習 ---------- */

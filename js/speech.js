@@ -1,5 +1,5 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js';
+import { CONFIG } from './config.js?v=2026-08-27a';
 
 const synth = window.speechSynthesis;
 let voice = null;
@@ -26,6 +26,7 @@ function pickVoice() {
     const name = voice.name.toLowerCase();
     let score = 0;
     if (voice.lang.toLowerCase().replace('_', '-') === lang) score += 100;
+    if (voice.default) score += 80;   // iPhoneの設定で選ばれている声を最優先する
     const order = preferred.findIndex((p) => name.includes(p));
     if (order >= 0) score += 60 - order;                              // 指定した順に優先
     if (QUALITY_HINTS.some((hint) => name.includes(hint))) score += 40; // 高品質版があれば優先
@@ -41,10 +42,23 @@ export function currentVoice() {
   return voice ? { name: voice.name, lang: voice.lang, local: voice.localService } : null;
 }
 
+/** 声が決まった／変わったときに知らせる相手 */
+const listeners = [];
+
+function notify() {
+  listeners.forEach((cb) => cb(currentVoice()));
+}
+
+/** いま使う声が決まったら教えてもらう（登録時にも1回呼ばれる） */
+export function onVoiceChange(callback) {
+  listeners.push(callback);
+  callback(currentVoice());
+}
+
 if (synth) {
   voice = pickVoice();
-  // iOS / Chrome は音声リストが非同期で届く
-  synth.addEventListener?.('voiceschanged', () => { voice = pickVoice(); });
+  // iOS / Chrome は音声リストが非同期で届く。あとから増えることもある
+  synth.addEventListener?.('voiceschanged', () => { voice = pickVoice(); notify(); });
 }
 
 /**

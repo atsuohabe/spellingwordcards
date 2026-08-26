@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js';
-import { listSheets, loadCards } from './data.js';
-import { lastChoice, session } from './storage.js';
-import * as speech from './speech.js';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-08-27a';
+import { listSheets, loadCards } from './data.js?v=2026-08-27a';
+import { lastChoice, session } from './storage.js?v=2026-08-27a';
+import * as speech from './speech.js?v=2026-08-27a';
 
 const $ = (id) => document.getElementById(id);
 
@@ -11,6 +11,7 @@ const el = {
   modeBtns: document.querySelectorAll('.mode-btn'),
   startBtn: $('start-btn'),
   homeError: $('home-error'),
+  voiceInfo: $('voice-info'),
   resumeBox: $('resume-box'),
   resumeInfo: $('resume-info'),
   resumeBtn: $('resume-btn'),
@@ -263,7 +264,13 @@ function quitStudy() {
   speech.stop();
   session.set(state); // 途中でやめても「つづきから」で戻れる
   state = null;
-  initHome();
+  // いま読み込まれている版と、実際に使われる声を画面の下に出す（設定の確認用）
+speech.onVoiceChange((v) => {
+  const name = v ? v.name : 'default voice';
+  el.voiceInfo.textContent = `v${APP_VERSION} · 🔊 ${name} · speed ${CONFIG.speech.rate}`;
+});
+
+initHome();
 }
 
 /* ---------------- イベント ---------------- */
@@ -283,6 +290,18 @@ el.card.addEventListener('click', () => { if (!el.card.classList.contains('is-fl
 el.yesBtn.addEventListener('click', () => answer(true));
 el.noBtn.addEventListener('click', () => answer(false));
 el.againBtn.addEventListener('click', () => { selected.sheetId = state.sheetId; selected.sheetName = state.sheetName; startStudy(); });
-el.homeBtn.addEventListener('click', () => { state = null; initHome(); });
+el.homeBtn.addEventListener('click', () => { state = null; // いま読み込まれている版と、実際に使われる声を画面の下に出す（設定の確認用）
+speech.onVoiceChange((v) => {
+  const name = v ? v.name : 'default voice';
+  el.voiceInfo.textContent = `v${APP_VERSION} · 🔊 ${name} · speed ${CONFIG.speech.rate}`;
+});
+
+initHome(); });
+
+// いま読み込まれている版と、実際に使われる声を画面の下に出す（設定の確認用）
+speech.onVoiceChange((v) => {
+  const name = v ? v.name : 'default voice';
+  el.voiceInfo.textContent = `v${APP_VERSION} · 🔊 ${name} · speed ${CONFIG.speech.rate}`;
+});
 
 initHome();

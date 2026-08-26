@@ -10,6 +10,9 @@
  *   2. spreadsheetUrl にスプレッドシートのURLを貼る
  *   3. apiKey にAPIキーを貼る
  */
+/** 公開した版がちゃんと読み込まれているか確認するための番号（画面の下に出ます） */
+export const APP_VERSION = '2026-08-27a';
+
 export const CONFIG = {
   source: 'local',
 
