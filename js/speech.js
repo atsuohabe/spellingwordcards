@@ -1,5 +1,5 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js?v=2026-08-27a';
+import { CONFIG } from './config.js?v=2026-08-27b';
 
 const synth = window.speechSynthesis;
 let voice = null;
@@ -26,9 +26,9 @@ function pickVoice() {
     const name = voice.name.toLowerCase();
     let score = 0;
     if (voice.lang.toLowerCase().replace('_', '-') === lang) score += 100;
-    if (voice.default) score += 80;   // iPhoneの設定で選ばれている声を最優先する
     const order = preferred.findIndex((p) => name.includes(p));
-    if (order >= 0) score += 60 - order;                              // 指定した順に優先
+    if (order >= 0) score += 1000 - order * 100;  // preferVoices の順番をいちばん優先
+    if (voice.default) score += 80;               // 次に、端末の設定で選ばれている声
     if (QUALITY_HINTS.some((hint) => name.includes(hint))) score += 40; // 高品質版があれば優先
     if (voice.localService) score += 5;                                // 端末内の声は途切れない
     return score;

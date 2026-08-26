@@ -24,12 +24,16 @@ def current_version() -> str:
     return found.group(1)
 
 
+def bump_suffix(version: str) -> str:
+    """末尾の a -> b -> c ... を1つ進める"""
+    base, suffix = version[:-1], version[-1]
+    return base + (chr(ord(suffix) + 1) if suffix.isalpha() and suffix < "z" else "a")
+
+
 def next_version(old: str) -> str:
-    today = datetime.date.today().isoformat()          # 2026-08-27
-    if old.startswith(today):
-        suffix = old[len(today):] or "a"
-        return today + chr(ord(suffix[-1]) + 1)        # a -> b -> c ...
-    return today + "a"
+    candidate = datetime.date.today().isoformat() + "a"   # 2026-08-27a
+    # 番号が前に戻ると、古いファイルがキャッシュから使われてしまうので必ず増やす
+    return candidate if candidate > old else bump_suffix(old)
 
 
 def main() -> None:

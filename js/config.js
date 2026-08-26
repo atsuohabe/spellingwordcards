@@ -11,7 +11,7 @@
  *   3. apiKey にAPIキーを貼る
  */
 /** 公開した版がちゃんと読み込まれているか確認するための番号（画面の下に出ます） */
-export const APP_VERSION = '2026-08-27a';
+export const APP_VERSION = '2026-08-27b';
 
 export const CONFIG = {
   source: 'local',
@@ -50,7 +50,7 @@ export const CONFIG = {
 
     // 使いたい声の名前（上にあるものほど優先）。端末にあるものが自動で選ばれます。
     // 「(Enhanced)」「Premium」「Neural」などの高品質な声があれば優先します。
-    preferVoices: ['Ava', 'Samantha', 'Allison', 'Google US English', 'Karen'],
+    preferVoices: ['Alex', 'Ava', 'Samantha', 'Allison', 'Google US English', 'Karen'],
   },
 
   // カードを表示したときに自動で1回読み上げる

@@ -1,7 +1,7 @@
-import { CONFIG, APP_VERSION } from './config.js?v=2026-08-27a';
-import { listSheets, loadCards } from './data.js?v=2026-08-27a';
-import { lastChoice, session } from './storage.js?v=2026-08-27a';
-import * as speech from './speech.js?v=2026-08-27a';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-08-27b';
+import { listSheets, loadCards } from './data.js?v=2026-08-27b';
+import { lastChoice, session } from './storage.js?v=2026-08-27b';
+import * as speech from './speech.js?v=2026-08-27b';
 
 const $ = (id) => document.getElementById(id);
 
