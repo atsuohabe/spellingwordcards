@@ -1,20 +1,31 @@
 /**
- * アプリ設定 — マスタを用意したら、ここだけ書き換えれば動きます。
+ * アプリ設定 — ここだけ書き換えれば動きます。
  *
  * source:
- *   'local'  … data/index.json + data/<id>.json を読む（マスタ準備前のサンプル用）
+ *   'local'  … data/index.json + data/<id>.json を読む（xlsxから変換した控え / オフライン可）
  *   'gsheet' … Googleスプレッドシート（毎週シートを追加していく運用）を読む
+ *
+ * ▼ Googleスプレッドシート運用への切り替えは次の3か所だけ
+ *   1. source を 'gsheet' に変更
+ *   2. spreadsheetUrl にスプレッドシートのURLを貼る
+ *   3. apiKey にAPIキーを貼る
  */
 export const CONFIG = {
   source: 'local',
 
   gsheet: {
-    // スプレッドシートURLの /d/ と /edit の間の文字列
-    // 例: https://docs.google.com/spreadsheets/d/【ここ】/edit
+    // ブラウザのアドレスバーのURLをそのまま貼ればOK（IDを切り出す必要はありません）
+    // 例: 'https://docs.google.com/spreadsheets/d/xxxxxxxx/edit#gid=0'
+    // ※「Googleスプレッドシート形式」のファイルのURLであること（アップロードした
+    //   .xlsx のままでは読み取りAPIが使えません → ファイル → Googleスプレッドシートとして保存）
+    spreadsheetUrl: '',
+
+    // URLの代わりにIDだけを書いてもOK
     spreadsheetId: '',
 
-    // シート名の自動取得に使う Google Sheets API キー（任意）
-    // 設定すると「毎週シートを追加するだけ」でホームの一覧に自動で並びます。
+    // Google Sheets API キー（設定すると、シート名の自動取得と単語の読み込みに使われます）
+    // 「毎週シートを追加するだけ」でホームの一覧に自動で並びます。
+    // 作成後は必ず HTTPリファラー制限 と Sheets API のみ の制限をかけてください。
     apiKey: '',
 
     // apiKey を使わない場合の手動リスト（毎週ここに1行足す）

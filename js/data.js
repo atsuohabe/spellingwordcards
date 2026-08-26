@@ -88,6 +88,34 @@ async function fetchJson(url) {
   return res.json();
 }
 
+/** スプレッドシートのURL（またはID）からIDを取り出す */
+function resolveSpreadsheetId() {
+  const { spreadsheetUrl, spreadsheetId } = CONFIG.gsheet;
+  const fromUrl = String(spreadsheetUrl || '').match(/\/d\/([A-Za-z0-9-_]+)/);
+  const id = fromUrl ? fromUrl[1] : String(spreadsheetId || '').trim();
+  if (!id) throw new Error('config.js に spreadsheetUrl（またはspreadsheetId）を設定してください');
+  return id;
+}
+
+/** つまずきやすい失敗を、原因が分かるメッセージにする */
+function describeSheetError(status, id) {
+  if (status === 403) {
+    return 'スプレッドシートを読む権限がありません。\n' +
+      '・共有設定が「リンクを知っている全員が閲覧可」になっているか\n' +
+      '・APIキーのリファラー制限に、このページのURLが入っているか\nを確認してください。';
+  }
+  if (status === 404) {
+    const hint = id.length < 40
+      ? '\nこのIDは、アップロードした .xlsx ファイルのものかもしれません。' +
+        '\nスプレッドシートで「ファイル → Googleスプレッドシートとして保存」をして、' +
+        '\n新しく作られたファイルのURLを設定してください。'
+      : '';
+    return `スプレッドシートが見つかりません。URL（ID）を確認してください。${hint}`;
+  }
+  if (status === 400) return 'APIキーが正しくないようです。config.js の apiKey を確認してください。';
+  return `スプレッドシートを読み込めませんでした (${status})`;
+}
+
 /* ---------------- local ---------------- */
 
 const local = {
@@ -109,6 +137,19 @@ const local = {
 
 /* ---------------- Google スプレッドシート ---------------- */
 
+/** Sheets API v4（APIキーあり）: シートの中身をそのまま取得 */
+function valuesUrl(spreadsheetId, sheetName, apiKey) {
+  const range = encodeURIComponent(`'${String(sheetName).replace(/'/g, "''")}'`);
+  return `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}` +
+    `?majorDimension=ROWS&key=${apiKey}`;
+}
+
+/** gviz（APIキーなし）: 公開シートを直接読む */
+function gvizUrl(spreadsheetId, sheetName) {
+  return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq` +
+    `?tqx=out:json&headers=1&sheet=${encodeURIComponent(sheetName)}`;
+}
+
 /** gviz の応答（JSONP風）から JSON を取り出す */
 function parseGviz(text) {
   const start = text.indexOf('{');
@@ -119,14 +160,16 @@ function parseGviz(text) {
 
 const gsheet = {
   async listSheets() {
-    const { spreadsheetId, apiKey, sheets, excludeSheets } = CONFIG.gsheet;
-    if (!spreadsheetId) throw new Error('config.js に spreadsheetId を設定してください');
+    const { apiKey, sheets, excludeSheets } = CONFIG.gsheet;
+    const spreadsheetId = resolveSpreadsheetId();
 
     let names = sheets || [];
     if (apiKey) {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}` +
         `?fields=sheets.properties.title&key=${apiKey}`;
-      const data = await fetchJson(url);
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (!res.ok) throw new Error(describeSheetError(res.status, spreadsheetId));
+      const data = await res.json();
       names = (data.sheets || []).map((s) => s.properties.title);
     }
     const exclude = new Set((excludeSheets || []).map(normalizeHeader));
@@ -136,11 +179,18 @@ const gsheet = {
   },
 
   async loadCards(sheetName) {
-    const { spreadsheetId } = CONFIG.gsheet;
-    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq` +
-      `?tqx=out:json&headers=1&sheet=${encodeURIComponent(sheetName)}`;
-    const res = await fetch(url, { cache: 'no-cache' });
-    if (!res.ok) throw new Error(`シートを読み込めませんでした (${res.status})`);
+    const spreadsheetId = resolveSpreadsheetId();
+    const { apiKey } = CONFIG.gsheet;
+    const res = await fetch(
+      apiKey ? valuesUrl(spreadsheetId, sheetName, apiKey) : gvizUrl(spreadsheetId, sheetName),
+      { cache: 'no-cache' },
+    );
+    if (!res.ok) throw new Error(describeSheetError(res.status, spreadsheetId));
+
+    if (apiKey) {
+      const values = (await res.json()).values || [];
+      return values.length ? rowsToCards(values[0], values.slice(1)) : [];
+    }
     const table = parseGviz(await res.text()).table;
     const headers = (table.cols || []).map((c) => c.label || c.id);
     const rows = (table.rows || []).map((r) => (r.c || []).map((c) => (c ? c.f ?? c.v : '')));
