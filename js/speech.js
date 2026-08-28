@@ -1,11 +1,12 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js?v=2026-08-27g';
+import { CONFIG } from './config.js?v=2026-08-28a';
 
 const synth = window.speechSynthesis;
 let voice = null;
 let unlocked = false;
 let rateOverride = null;   // 画面で選ばれた速さ（未選択なら config の値を使う）
 let requestId = 0;         // 最後に頼まれた再生だけを鳴らすための番号
+let voiceNameOverride = null;   // 画面で選ばれた声の名前（未選択なら自動）
 
 export const isSupported = !!synth;
 
@@ -22,6 +23,12 @@ function pickVoice() {
   const base = lang.split('-')[0];
   const candidates = voices.filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(base));
   if (!candidates.length) return null;
+
+  // 画面で声が選ばれていれば、それをそのまま使う
+  if (voiceNameOverride) {
+    const chosen = candidates.find((v) => v.name === voiceNameOverride);
+    if (chosen) return chosen;
+  }
 
   const preferred = (CONFIG.speech.preferVoices || []).map((n) => n.toLowerCase());
   const rank = (voice) => {
@@ -62,6 +69,22 @@ export function refreshVoice() {
   const before = voice;
   voice = pickVoice();
   if (voice !== before) notify();
+}
+
+/** 使える英語の声の一覧（おすすめ順） */
+export function listVoices() {
+  if (!synth) return [];
+  const base = CONFIG.speech.lang.toLowerCase().split('-')[0];
+  return synth.getVoices()
+    .filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(base))
+    .map((v) => ({ name: v.name, lang: v.lang }));
+}
+
+/** 使う声を指定する（null なら自動で選ぶ） */
+export function setVoiceName(name) {
+  voiceNameOverride = name || null;
+  voice = pickVoice();
+  notify();
 }
 
 /** 読み上げの速さを変える */

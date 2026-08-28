@@ -127,6 +127,25 @@ body {
   color: var(--sub);
   text-align: center;
 }
+.voice-select {
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 20px;
+  padding: 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%236b7a8d' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
 .speed-row { display: flex; gap: 8px; }
 .speed-btn {
   flex: 1;

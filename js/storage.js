@@ -34,6 +34,12 @@ export const speed = {
   set: (rate) => write('speed', rate),
 };
 
+/** トップページで選んだ声の名前（未選択なら自動） */
+export const voiceName = {
+  get: () => read('voiceName'),
+  set: (name) => write('voiceName', name),
+};
+
 /** 学習の途中状態（リロード・アプリ再訪時の「つづきから」用） */
 export const session = {
   get: () => read('session'),
