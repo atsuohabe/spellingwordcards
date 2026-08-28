@@ -1,7 +1,7 @@
-import { CONFIG, APP_VERSION } from './config.js?v=2026-08-28a';
-import { listSheets, loadCards } from './data.js?v=2026-08-28a';
-import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-08-28a';
-import * as speech from './speech.js?v=2026-08-28a';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-08-28b';
+import { listSheets, loadCards } from './data.js?v=2026-08-28b';
+import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-08-28b';
+import * as speech from './speech.js?v=2026-08-28b';
 
 const $ = (id) => document.getElementById(id);
 
@@ -133,14 +133,24 @@ function renderVoiceOptions() {
 
   const auto = document.createElement('option');
   auto.value = '';
-  auto.textContent = 'Auto (best available)';
+  auto.textContent = `Auto (${voices.length} voices found)`;
   el.voiceSelect.appendChild(auto);
 
-  for (const v of voices) {
-    const option = document.createElement('option');
-    option.value = v.name;
-    option.textContent = v.name;
-    el.voiceSelect.appendChild(option);
+  const groups = [
+    ['English', voices.filter((v) => v.isEnglish)],
+    ['Other languages', voices.filter((v) => !v.isEnglish)],
+  ];
+  for (const [label, list] of groups) {
+    if (!list.length) continue;
+    const group = document.createElement('optgroup');
+    group.label = label;
+    for (const v of list) {
+      const option = document.createElement('option');
+      option.value = v.name;
+      option.textContent = `${v.name} (${v.lang})`;
+      group.appendChild(option);
+    }
+    el.voiceSelect.appendChild(group);
   }
   el.voiceSelect.value = saved && voices.some((v) => v.name === saved) ? saved : '';
 }

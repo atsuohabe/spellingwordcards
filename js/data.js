@@ -5,7 +5,7 @@
  *   listSheets() -> [{ id, name }]
  *   loadCards(sheetId) -> [{ word, ja }]
  */
-import { CONFIG } from './config.js?v=2026-08-28a';
+import { CONFIG } from './config.js?v=2026-08-28b';
 
 const WORD_KEYS = ['word', 'words', 'english', 'spelling', 'eng', '英語', 'えいご', 'たんご', '単語', 'スペル'];
 const JA_KEYS = ['ja', 'japanese', 'jp', 'translation', 'meaning', 'mean',

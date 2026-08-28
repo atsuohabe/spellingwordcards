@@ -1,5 +1,5 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js?v=2026-08-28a';
+import { CONFIG } from './config.js?v=2026-08-28b';
 
 const synth = window.speechSynthesis;
 let voice = null;
@@ -21,14 +21,14 @@ function pickVoice() {
 
   const lang = CONFIG.speech.lang.toLowerCase();
   const base = lang.split('-')[0];
-  const candidates = voices.filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(base));
-  if (!candidates.length) return null;
-
-  // 画面で声が選ばれていれば、それをそのまま使う
+  // 画面で声が選ばれていれば、言語にかかわらずそれをそのまま使う
   if (voiceNameOverride) {
-    const chosen = candidates.find((v) => v.name === voiceNameOverride);
+    const chosen = voices.find((v) => v.name === voiceNameOverride);
     if (chosen) return chosen;
   }
+
+  const candidates = voices.filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(base));
+  if (!candidates.length) return null;
 
   const preferred = (CONFIG.speech.preferVoices || []).map((n) => n.toLowerCase());
   const rank = (voice) => {
@@ -66,18 +66,19 @@ export function onVoiceChange(callback) {
 
 /** 声を選び直す（iPhoneの設定を変えて戻ってきたときなど） */
 export function refreshVoice() {
-  const before = voice;
   voice = pickVoice();
-  if (voice !== before) notify();
+  notify();   // 声が増えていることがあるので、一覧も作り直してもらう
 }
 
-/** 使える英語の声の一覧（おすすめ順） */
+/** 端末にある声の一覧。英語以外も隠さずに返す（探している声が見つからないと困るため） */
 export function listVoices() {
   if (!synth) return [];
   const base = CONFIG.speech.lang.toLowerCase().split('-')[0];
-  return synth.getVoices()
-    .filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(base))
-    .map((v) => ({ name: v.name, lang: v.lang }));
+  return synth.getVoices().map((v) => ({
+    name: v.name,
+    lang: v.lang,
+    isEnglish: v.lang.toLowerCase().replace('_', '-').startsWith(base),
+  }));
 }
 
 /** 使う声を指定する（null なら自動で選ぶ） */
