@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""公開した変更が iPhone のキャッシュに邪魔されないよう、版番号を更新する。
+"""公開した変更が端末のキャッシュに邪魔されないよう、版番号を更新する。
 
 使い方:  python3 tools/bump_version.py
 
-index.html・js/*.js の `?v=...` と js/config.js の APP_VERSION を、
-今日の日付ベースの新しい番号にまとめて書き換えます。
-（画面の下に出る番号が変われば、新しい版が読み込まれた証拠になります）
+index.html・js/*.js の `?v=...`、js/config.js の APP_VERSION、
+そして version.json を、今日の日付ベースの新しい番号にまとめて書き換えます。
+（version.json は、開いたままのアプリに「新しい版が出た」と知らせるために使います）
 """
 import datetime
+import json
 import re
 import sys
 from pathlib import Path
@@ -48,6 +49,9 @@ def main() -> None:
             continue
         path.write_text(text.replace(old, new), encoding="utf-8")
         print(f"  - {path.relative_to(ROOT)}")
+    (ROOT / "version.json").write_text(json.dumps({"version": new}, indent=2) + "\n",
+                                       encoding="utf-8")
+    print("  - version.json")
     print(f"版番号: {old} -> {new}")
 
 

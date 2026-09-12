@@ -1,7 +1,7 @@
-import { CONFIG, APP_VERSION } from './config.js?v=2026-09-12a';
-import { listSheets, loadCards } from './data.js?v=2026-09-12a';
-import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-09-12a';
-import * as speech from './speech.js?v=2026-09-12a';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-09-12c';
+import { listSheets, loadCards } from './data.js?v=2026-09-12c';
+import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-09-12c';
+import * as speech from './speech.js?v=2026-09-12c';
 
 const $ = (id) => document.getElementById(id);
 
@@ -12,6 +12,7 @@ const el = {
   startBtn: $('start-btn'),
   homeError: $('home-error'),
   voiceInfo: $('voice-info'),
+  updateBar: $('update-bar'),
   speedBtns: document.querySelectorAll('.speed-btn'),
   voiceSelect: $('voice-select'),
   listBackBtn: $('list-back-btn'),
@@ -55,6 +56,7 @@ function showView(name) {
   for (const [key, node] of Object.entries(el.views)) {
     node.classList.toggle('is-active', key === name);
   }
+  syncUpdateBar();
   window.scrollTo(0, 0);
 }
 
@@ -187,6 +189,46 @@ function hideError() {
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ---------------- 新しい版のお知らせ ---------------- */
+
+const UPDATE_CHECK_INTERVAL = 5 * 60 * 1000;   // 確認しすぎないように5分あける
+let lastUpdateCheck = 0;
+let updateAvailable = false;
+
+/** お知らせはホームにいるときだけ出す（学習中に画面を隠さないように） */
+function syncUpdateBar() {
+  el.updateBar.hidden = !(updateAvailable && el.views.home.classList.contains('is-active'));
+}
+
+/** 公開されている版と、いま動いている版を見くらべる */
+async function checkForUpdate() {
+  const now = Date.now();
+  if (updateAvailable || now - lastUpdateCheck < UPDATE_CHECK_INTERVAL) return;
+  lastUpdateCheck = now;
+  try {
+    const res = await fetch(`version.json?t=${now}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const { version } = await res.json();
+    updateAvailable = !!version && version !== APP_VERSION;
+    syncUpdateBar();
+  } catch (_) { /* つながらないときは何も出さない */ }
+}
+
+/** 古いHTMLが使われないよう、URLを変えて読み込み直す */
+function applyUpdate() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('u', String(Date.now()));
+  window.location.replace(url.toString());
+}
+
+/** 更新のために付けた ?u=... を、アドレスバーから消しておく */
+function tidyUpdateParam() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('u')) return;
+  url.searchParams.delete('u');
+  window.history.replaceState(null, '', url.pathname + url.search + url.hash);
 }
 
 /* ---------------- 単語一覧 ---------------- */
@@ -408,9 +450,14 @@ el.speedBtns.forEach((btn) => {
   btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
 });
 
+el.updateBar.addEventListener('click', applyUpdate);
+
 // iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
+// ついでに、新しい版が出ていないかも確認する
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) speech.refreshVoice();
+  if (document.hidden) return;
+  speech.refreshVoice();
+  checkForUpdate();
 });
 window.addEventListener('pageshow', () => speech.refreshVoice());
 
@@ -422,6 +469,8 @@ speech.onVoiceChange(() => {
 });
 setSpeed(speed.get() ?? CONFIG.speech.rate);
 
+tidyUpdateParam();
+checkForUpdate();
 initHome();
 }
 
@@ -455,9 +504,14 @@ el.speedBtns.forEach((btn) => {
   btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
 });
 
+el.updateBar.addEventListener('click', applyUpdate);
+
 // iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
+// ついでに、新しい版が出ていないかも確認する
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) speech.refreshVoice();
+  if (document.hidden) return;
+  speech.refreshVoice();
+  checkForUpdate();
 });
 window.addEventListener('pageshow', () => speech.refreshVoice());
 
@@ -469,6 +523,8 @@ speech.onVoiceChange(() => {
 });
 setSpeed(speed.get() ?? CONFIG.speech.rate);
 
+tidyUpdateParam();
+checkForUpdate();
 initHome(); });
 
 el.voiceSelect.addEventListener('change', () => {
@@ -483,9 +539,14 @@ el.speedBtns.forEach((btn) => {
   btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
 });
 
+el.updateBar.addEventListener('click', applyUpdate);
+
 // iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
+// ついでに、新しい版が出ていないかも確認する
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) speech.refreshVoice();
+  if (document.hidden) return;
+  speech.refreshVoice();
+  checkForUpdate();
 });
 window.addEventListener('pageshow', () => speech.refreshVoice());
 
@@ -497,4 +558,6 @@ speech.onVoiceChange(() => {
 });
 setSpeed(speed.get() ?? CONFIG.speech.rate);
 
+tidyUpdateParam();
+checkForUpdate();
 initHome();

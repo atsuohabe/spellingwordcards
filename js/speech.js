@@ -1,5 +1,5 @@
 /** Web Speech API による発音再生（音声ファイル不要・オフラインでも動く） */
-import { CONFIG } from './config.js?v=2026-09-12a';
+import { CONFIG } from './config.js?v=2026-09-12c';
 
 const synth = window.speechSynthesis;
 let voice = null;
