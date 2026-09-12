@@ -1,12 +1,12 @@
-import { CONFIG, APP_VERSION } from './config.js?v=2026-08-28b';
-import { listSheets, loadCards } from './data.js?v=2026-08-28b';
-import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-08-28b';
-import * as speech from './speech.js?v=2026-08-28b';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-09-12a';
+import { listSheets, loadCards } from './data.js?v=2026-09-12a';
+import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-09-12a';
+import * as speech from './speech.js?v=2026-09-12a';
 
 const $ = (id) => document.getElementById(id);
 
 const el = {
-  views: { home: $('view-home'), study: $('view-study'), done: $('view-done') },
+  views: { home: $('view-home'), list: $('view-list'), study: $('view-study'), done: $('view-done') },
   sheetList: $('sheet-list'),
   modeBtns: document.querySelectorAll('.mode-btn'),
   startBtn: $('start-btn'),
@@ -14,6 +14,10 @@ const el = {
   voiceInfo: $('voice-info'),
   speedBtns: document.querySelectorAll('.speed-btn'),
   voiceSelect: $('voice-select'),
+  listBackBtn: $('list-back-btn'),
+  listTitle: $('list-title'),
+  listCount: $('list-count'),
+  wordList: $('word-list'),
   resumeBox: $('resume-box'),
   resumeInfo: $('resume-info'),
   resumeBtn: $('resume-btn'),
@@ -78,20 +82,31 @@ function renderSheetList(sheets, savedSheetId) {
     return;
   }
   for (const sheet of sheets) {
-    const btn = document.createElement('button');
-    btn.className = 'sheet-btn';
-    btn.innerHTML = `<span>${escapeHtml(sheet.name)}</span><span class="check">✅</span>`;
-    btn.addEventListener('click', () => selectSheet(sheet, btn));
-    el.sheetList.appendChild(btn);
+    const row = document.createElement('div');
+    row.className = 'sheet-row';
+
+    const pick = document.createElement('button');
+    pick.className = 'sheet-btn';
+    pick.innerHTML = `<span>${escapeHtml(sheet.name)}</span><span class="check">✅</span>`;
+    pick.addEventListener('click', () => selectSheet(sheet, pick));
+
+    const open = document.createElement('button');
+    open.className = 'list-btn';
+    open.textContent = '📖';
+    open.setAttribute('aria-label', `See all words in ${sheet.name}`);
+    open.addEventListener('click', () => openList(sheet));
+
+    row.append(pick, open);
+    el.sheetList.appendChild(row);
     // 前回えらんだシートを最初から選んでおく
-    if (sheet.id === savedSheetId) selectSheet(sheet, btn);
+    if (sheet.id === savedSheetId) selectSheet(sheet, pick);
   }
 }
 
 function selectSheet(sheet, btn) {
   selected.sheetId = sheet.id;
   selected.sheetName = sheet.name;
-  [...el.sheetList.children].forEach((node) => node.classList.toggle('is-on', node === btn));
+  el.sheetList.querySelectorAll('.sheet-btn').forEach((node) => node.classList.toggle('is-on', node === btn));
   el.startBtn.disabled = false;
   hideError();
 }
@@ -172,6 +187,73 @@ function hideError() {
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ---------------- 単語一覧 ---------------- */
+
+/** Vol の単語をぜんぶ並べて見せる（発音も確認できる） */
+async function openList(sheet) {
+  speech.unlock();                      // 一覧のタップで音が出るようにしておく
+  showView('list');
+  el.listTitle.textContent = sheet.name;
+  el.listCount.textContent = '';
+  el.wordList.innerHTML = '<p class="loading">Loading…</p>';
+
+  try {
+    renderWordList(await loadCards(sheet.id));
+  } catch (err) {
+    el.wordList.innerHTML = '';
+    const message = document.createElement('p');
+    message.className = 'error';
+    message.textContent = `Sorry, the words did not load.\n${err.message}`;
+    el.wordList.appendChild(message);
+  }
+}
+
+function renderWordList(cards) {
+  el.listCount.textContent = `${cards.length} words`;
+  el.wordList.innerHTML = '';
+
+  cards.forEach((card, index) => {
+    const row = document.createElement('div');
+    row.className = 'word-row';
+
+    const no = document.createElement('span');
+    no.className = 'word-no';
+    no.textContent = String(index + 1);
+
+    const text = document.createElement('div');
+    text.className = 'word-text';
+    const en = document.createElement('p');
+    en.className = 'word-en';
+    en.textContent = card.word;
+    text.appendChild(en);
+    if (card.ja) {
+      const ja = document.createElement('p');
+      ja.className = 'word-ja';
+      ja.textContent = card.ja;
+      text.appendChild(ja);
+    }
+
+    const play = document.createElement('button');
+    play.className = 'word-speak';
+    play.textContent = '🔊';
+    play.setAttribute('aria-label', `Play ${card.word}`);
+    play.addEventListener('click', () => {
+      speech.speak(card.word, {
+        onStart: () => play.classList.add('is-speaking'),
+        onEnd: () => play.classList.remove('is-speaking'),
+      });
+    });
+
+    row.append(no, text, play);
+    el.wordList.appendChild(row);
+  });
+}
+
+function closeList() {
+  speech.stop();
+  showView('home');
 }
 
 /* ---------------- 学習の開始 ---------------- */
@@ -349,6 +431,7 @@ el.modeBtns.forEach((btn) => btn.addEventListener('click', () => setMode(btn.dat
 el.startBtn.addEventListener('click', startStudy);
 el.resumeBtn.addEventListener('click', resumeStudy);
 el.quitBtn.addEventListener('click', quitStudy);
+el.listBackBtn.addEventListener('click', closeList);
 el.speakBtn.addEventListener('click', (e) => {
   e.stopPropagation(); cancelPending(); speech.unlock(); speakCurrent();
 });

@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Word Cards">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=2026-08-28b">
+<link rel="stylesheet" href="css/style.css?v=2026-09-12a">
 <title>Word Cards</title>
 </head>
 <body>
@@ -51,6 +51,16 @@
     </div>
     <p id="voice-info" class="voice-info"></p>
   </div>
+</section>
+
+<!-- ========== 単語一覧 ========== -->
+<section id="view-list" class="view">
+  <header class="topbar">
+    <button id="list-back-btn" class="btn-plain">← Back</button>
+    <span id="list-title" class="topbar-title"></span>
+    <span id="list-count" class="progress"></span>
+  </header>
+  <div id="word-list" class="word-list"></div>
 </section>
 
 <!-- ========== 学習 ========== -->
@@ -96,6 +106,6 @@
   </div>
 </section>
 
-<script type="module" src="js/app.js?v=2026-08-28b"></script>
+<script type="module" src="js/app.js?v=2026-09-12a"></script>
 </body>
 </html>
