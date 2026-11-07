@@ -46,24 +46,3 @@ export const session = {
   set: (state) => write('session', state),
   clear: () => remove('session'),
 };
-
-/** 写真取り込み用のキー（この端末だけに保存。サーバーには送らない） */
-export const scanKeys = {
-  get: () => read('scanKeys') || { anthropic: '', github: '' },
-  set: (keys) => write('scanKeys', keys),
-};
-
-/**
- * 写真から登録した直後のシート。
- * GitHub Pages に反映されるまで（1〜2分）、この端末ではすぐ使えるように控えておく。
- * [{ id, name, cards, savedAt }]
- */
-export const pendingSheets = {
-  get: () => read('pendingSheets') || [],
-  set: (list) => write('pendingSheets', list),
-  add(sheet) {
-    const list = pendingSheets.get().filter((s) => s.id !== sheet.id);
-    list.push(sheet);
-    write('pendingSheets', list);
-  },
-};

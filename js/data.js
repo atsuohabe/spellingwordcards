@@ -5,11 +5,7 @@
  *   listSheets() -> [{ id, name }]
  *   loadCards(sheetId) -> [{ word, ja }]
  */
-import { CONFIG } from './config.js?v=2026-11-07a';
-import { pendingSheets } from './storage.js?v=2026-11-07a';
-
-/** 写真から登録したシートは、公開に反映されるまでこれだけ待つ（それを過ぎたら控えを捨てる） */
-const PENDING_TTL = 24 * 60 * 60 * 1000;
+import { CONFIG } from './config.js?v=2026-09-12c';
 
 const WORD_KEYS = ['word', 'words', 'english', 'spelling', 'eng', '英語', 'えいご', 'たんご', '単語', 'スペル'];
 const JA_KEYS = ['ja', 'japanese', 'jp', 'translation', 'meaning', 'mean',
@@ -122,29 +118,13 @@ function describeSheetError(status, id) {
 
 /* ---------------- local ---------------- */
 
-/**
- * 公開済みの一覧に、この端末で登録したばかりのシートを足す。
- * 公開側に反映されたもの・古くなったものは控えから消す。
- */
-function mergePending(sheets) {
-  const published = new Set(sheets.map((s) => s.id));
-  const now = Date.now();
-  const keep = pendingSheets.get()
-    .filter((p) => !published.has(p.id) && now - (p.savedAt || 0) < PENDING_TTL);
-  pendingSheets.set(keep);
-  return [...sheets, ...keep.map((p) => ({ id: p.id, name: p.name }))];
-}
-
 const local = {
   async listSheets() {
     const data = await fetchJson('data/index.json');
-    const list = Array.isArray(data) ? data : data.sheets || [];
-    const sheets = list.map((s) => (typeof s === 'string' ? { id: s, name: s } : { id: s.id, name: s.name || s.id }));
-    return mergePending(sheets);
+    const sheets = Array.isArray(data) ? data : data.sheets || [];
+    return sheets.map((s) => (typeof s === 'string' ? { id: s, name: s } : { id: s.id, name: s.name || s.id }));
   },
   async loadCards(sheetId) {
-    const pending = pendingSheets.get().find((p) => p.id === sheetId);
-    if (pending) return pending.cards.map((c) => ({ word: c.word, ja: c.ja || '' }));
     const data = await fetchJson(`data/${encodeURIComponent(sheetId)}.json`);
     const rows = Array.isArray(data) ? data : data.cards || [];
     if (!rows.length) return [];
