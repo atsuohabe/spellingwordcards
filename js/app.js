@@ -1,7 +1,7 @@
-import { CONFIG, APP_VERSION } from './config.js?v=2026-09-12c';
-import { listSheets, loadCards } from './data.js?v=2026-09-12c';
-import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-09-12c';
-import * as speech from './speech.js?v=2026-09-12c';
+import { CONFIG, APP_VERSION } from './config.js?v=2026-11-07a';
+import { listSheets, loadCards } from './data.js?v=2026-11-07a';
+import { lastChoice, session, speed, voiceName } from './storage.js?v=2026-11-07a';
+import * as speech from './speech.js?v=2026-11-07a';
 
 const $ = (id) => document.getElementById(id);
 
@@ -438,40 +438,7 @@ function quitStudy() {
   speech.stop();
   session.set(state); // 途中でやめても「つづきから」で戻れる
   state = null;
-  el.voiceSelect.addEventListener('change', () => {
-  const name = el.voiceSelect.value || null;
-  voiceName.set(name);
-  speech.setVoiceName(name);
-  speech.unlock();
-  speech.speak('This is how fast I read.');   // 選んだ声をその場で確かめられるように
-});
-
-el.speedBtns.forEach((btn) => {
-  btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
-});
-
-el.updateBar.addEventListener('click', applyUpdate);
-
-// iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
-// ついでに、新しい版が出ていないかも確認する
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) return;
-  speech.refreshVoice();
-  checkForUpdate();
-});
-window.addEventListener('pageshow', () => speech.refreshVoice());
-
-// いま読み込まれている版と、実際に使われる声・速さを画面の下に出す（設定の確認用）
-speech.setVoiceName(voiceName.get());
-speech.onVoiceChange(() => {
-  renderVoiceOptions();
-  updateVoiceInfo();
-});
-setSpeed(speed.get() ?? CONFIG.speech.rate);
-
-tidyUpdateParam();
-checkForUpdate();
-initHome();
+  initHome();
 }
 
 /* ---------------- イベント ---------------- */
@@ -492,40 +459,7 @@ el.card.addEventListener('click', () => { if (!el.card.classList.contains('is-fl
 el.yesBtn.addEventListener('click', () => answer(true));
 el.noBtn.addEventListener('click', () => answer(false));
 el.againBtn.addEventListener('click', () => { selected.sheetId = state.sheetId; selected.sheetName = state.sheetName; startStudy(); });
-el.homeBtn.addEventListener('click', () => { state = null; el.voiceSelect.addEventListener('change', () => {
-  const name = el.voiceSelect.value || null;
-  voiceName.set(name);
-  speech.setVoiceName(name);
-  speech.unlock();
-  speech.speak('This is how fast I read.');   // 選んだ声をその場で確かめられるように
-});
-
-el.speedBtns.forEach((btn) => {
-  btn.addEventListener('click', () => setSpeed(Number(btn.dataset.rate), { preview: true }));
-});
-
-el.updateBar.addEventListener('click', applyUpdate);
-
-// iPhoneの設定で声を変えて戻ってきたら、選び直して表示を更新する
-// ついでに、新しい版が出ていないかも確認する
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) return;
-  speech.refreshVoice();
-  checkForUpdate();
-});
-window.addEventListener('pageshow', () => speech.refreshVoice());
-
-// いま読み込まれている版と、実際に使われる声・速さを画面の下に出す（設定の確認用）
-speech.setVoiceName(voiceName.get());
-speech.onVoiceChange(() => {
-  renderVoiceOptions();
-  updateVoiceInfo();
-});
-setSpeed(speed.get() ?? CONFIG.speech.rate);
-
-tidyUpdateParam();
-checkForUpdate();
-initHome(); });
+el.homeBtn.addEventListener('click', () => { state = null; initHome(); });
 
 el.voiceSelect.addEventListener('change', () => {
   const name = el.voiceSelect.value || null;
