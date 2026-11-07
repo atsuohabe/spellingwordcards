@@ -8,6 +8,7 @@
 - **📖 単語一覧** … Vol ごとに単語・訳を一覧で確認。各行から発音も再生できる
 - **じゅんばん / ランダム** … マスタの並び順そのまま or シャッフル
 - **シート選択** … 毎週追加されるシートをホームから選択。前回のシート・途中の進み具合は端末に保存され「▶️ つづきから」で再開
+- **📷 写真から追加** … プリントの写真から英単語を読み取り、訳をつけて新しいシート（Vol.N）として登録。マスタの xlsx にも同じシートが追加される
 
 ビルド不要・ライブラリ不使用の静的サイトです（HTML + CSS + ES Modules のみ）。
 
@@ -22,6 +23,10 @@ js/data.js          マスタ読み込み（ローカルJSON / Googleスプレ�
 js/speech.js        発音再生（Web Speech API）
 js/storage.js       選択シート・学習途中の保存（localStorage）
 js/app.js           画面のうごき
+js/scan.js          📷 写真から追加の画面
+js/ai.js            写真の読み取り・翻訳（Claude API）
+js/xlsx.js          マスタの xlsx にシートを足す
+js/github.js        GitHub への保存（xlsx と data/*.json を1コミットで更新）
 data/               マスタから自動生成された単語データ（手で編集しない）
 tools/xlsx_to_json.py   xlsx → data/*.json の変換スクリプト
 tools/bump_version.py   キャッシュ対策の版番号を上げるスクリプト
@@ -69,6 +74,37 @@ python3 -m http.server 8000
 ```bash
 python3 tools/xlsx_to_json.py
 ```
+
+### A-2. 写真から追加する（スマホだけで完結）
+
+ホーム画面の下にある **📷 Add from photo** から、プリントの写真を取り込んで新しいシートを作れます。
+
+1. **🖼 写真を選ぶ / 撮る** で、単語カードのプリントの写真を選ぶ（iPhone の写真も、そのまま使えます）
+2. **📖 読み取る** … Claude が英単語を読み取り、小学生向けの日本語訳（むずかしい漢字にはふりがな）をつけます（30秒ほど）
+3. 内容を確認・修正する
+   - 文字をタップすると、英単語・訳を手で直せます
+   - **🔄** … その単語の訳だけをつけ直します（押すたびに別の言い方を提案）
+   - **🔊** 発音を確認 / **↑ ↓** 並べかえ / **✕** 削除 / **＋ 単語を追加**
+   - シート名は、いまある `Vol.N` の次の番号が自動で入ります（変更も可）。単語には上から順に No.1, 2, 3 … とふられます
+4. **✅ 登録する** … マスタの `spellingwordcards.xlsx` の最後に同じ形（No. / Word / Translation）のシートを追加し、
+   アプリ用の `data/*.json` と一緒に GitHub の `main` へ1つのコミットで保存します
+   - 登録した端末では、その場で **Start 🚀** から練習できます
+   - ほかの端末には、GitHub Pages の再公開後（1〜2分）に出てきます
+   - 手元の xlsx を使い続ける場合は、登録後に GitHub から最新の `spellingwordcards.xlsx` をダウンロードしてから編集してください
+     （古い xlsx をアップロードすると、写真から追加したシートが消えてしまいます）
+
+#### はじめに1回だけ：キーの設定
+
+画面上部の **⚙️ 設定** に、次の2つを入れて **保存** します。キーはその端末のブラウザにだけ保存され、
+Anthropic と GitHub 以外には送られません（端末ごとに1回設定が必要です）。
+
+| 項目 | 取り方 |
+| --- | --- |
+| Claude の API キー | [Claude Console](https://console.anthropic.com/) → API Keys → Create Key（`sk-ant-...`）。写真1枚の読み取りで数円〜十数円ほどかかります。Console で利用上限を設定しておくと安心です |
+| GitHub のトークン | GitHub → Settings → Developer settings → **Fine-grained personal access tokens** → Generate new token。<br>Repository access: **Only select repositories** で `spellingwordcards` だけを選び、Permissions → **Contents: Read and write** にする（`github_pat_...`） |
+
+- 使うモデルや保存先のリポジトリ・ブランチは `js/config.js` の `scan` で変えられます
+- 読み取りと翻訳は `scan.model`（既定 `claude-opus-5-5`）で行います。安全フィルタで断られたときは、サーバー側で自動的に別のモデルでやり直す設定（fallbacks）を有効にしています
 
 ### B. Googleスプレッドシートを使う（任意）
 

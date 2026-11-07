@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Word Cards">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="css/style.css?v=2026-09-12c">
+<link rel="stylesheet" href="css/style.css?v=2026-11-07a">
 <title>Word Cards</title>
 </head>
 <body>
@@ -40,6 +40,8 @@
   <button id="start-btn" class="btn btn-primary btn-start" disabled>Start 🚀</button>
   <p id="home-error" class="error" hidden></p>
 
+  <button id="scan-open-btn" class="btn btn-sub btn-scan">📷 Add from photo</button>
+
   <div class="settings">
     <p class="settings-label">🗣 Voice</p>
     <select id="voice-select" class="voice-select" aria-label="Choose a voice"></select>
@@ -63,6 +65,53 @@
     <span id="list-count" class="progress"></span>
   </header>
   <div id="word-list" class="word-list"></div>
+</section>
+
+<!-- ========== 写真から追加 ========== -->
+<section id="view-scan" class="view">
+  <header class="topbar">
+    <button id="scan-back-btn" class="btn-plain">← Back</button>
+    <span class="topbar-title">📷 写真から追加</span>
+  </header>
+
+  <details id="scan-keys" class="scan-keys">
+    <summary>⚙️ 設定 <span id="scan-keys-status" class="scan-keys-status"></span></summary>
+    <label class="scan-label" for="scan-anthropic-key">Claude の API キー（写真の読み取り・翻訳）</label>
+    <input id="scan-anthropic-key" class="scan-input" type="password" autocomplete="off" placeholder="sk-ant-...">
+    <label class="scan-label" for="scan-github-token">GitHub のトークン（マスタへの登録）</label>
+    <input id="scan-github-token" class="scan-input" type="password" autocomplete="off" placeholder="github_pat_...">
+    <p class="scan-note">キーはこの端末のブラウザにだけ保存されます。くわしくは README の「写真から単語カードを作る」を見てください。</p>
+    <button id="scan-save-keys" class="btn btn-primary btn-small">保存</button>
+  </details>
+
+  <div id="scan-step-photo">
+    <p class="scan-lead">単語カードのプリントを撮った写真を選んでください。</p>
+    <input id="scan-file" type="file" accept="image/*" hidden>
+    <button id="scan-pick-btn" class="btn btn-sub">🖼 写真を選ぶ / 撮る</button>
+    <img id="scan-preview" class="scan-preview" alt="選んだ写真" hidden>
+    <button id="scan-read-btn" class="btn btn-primary" disabled>📖 読み取る</button>
+  </div>
+
+  <div id="scan-step-review" hidden>
+    <p id="scan-title" class="scan-title" hidden></p>
+    <label class="scan-label" for="scan-sheet-name">シート名（並び番号）</label>
+    <input id="scan-sheet-name" class="scan-input" type="text" autocomplete="off">
+    <p class="scan-note">英単語と訳を確認してください。🔄 で訳をつけ直し、文字をタップすると手で直せます。上から順に No.1, 2, 3 … と番号がつきます。</p>
+    <div id="scan-rows" class="scan-rows"></div>
+    <button id="scan-add-btn" class="btn btn-sub">＋ 単語を追加</button>
+    <button id="scan-save-btn" class="btn btn-primary">✅ 登録する</button>
+    <button id="scan-retake-btn" class="btn btn-sub">📷 写真を選び直す</button>
+  </div>
+
+  <div id="scan-step-done" class="scan-done" hidden>
+    <p class="done-emoji">🎉</p>
+    <p id="scan-done-text" class="scan-done-text"></p>
+    <button id="scan-study-btn" class="btn btn-primary">Start 🚀</button>
+    <button id="scan-home-btn" class="btn btn-sub">🏠 Home</button>
+  </div>
+
+  <p id="scan-status" class="scan-status" hidden></p>
+  <p id="scan-error" class="error" hidden></p>
 </section>
 
 <!-- ========== 学習 ========== -->
@@ -108,6 +157,6 @@
   </div>
 </section>
 
-<script type="module" src="js/app.js?v=2026-09-12c"></script>
+<script type="module" src="js/app.js?v=2026-11-07a"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@
  *   3. apiKey にAPIキーを貼る
  */
 /** 公開した版がちゃんと読み込まれているか確認するための番号（画面の下に出ます） */
-export const APP_VERSION = '2026-09-12c';
+export const APP_VERSION = '2026-11-07a';
 
 export const CONFIG = {
   source: 'local',
@@ -59,4 +59,19 @@ export const CONFIG = {
   // 次のカードが出てから読み上げるまでの間（ミリ秒）
   // 大きくするとより余裕ができます（1000 = 1秒）
   autoSpeakDelay: 1500,
+
+  // 📷 写真から単語カードを作る機能（ホーム下部の「Add from photo」）
+  scan: {
+    // 写真の読み取りと翻訳に使う Claude のモデル
+    model: 'claude-opus-5-5',
+    // 登録先（マスタの xlsx と data/*.json をここへコミットする）
+    github: {
+      owner: 'atsuohabe',
+      repo: 'spellingwordcards',
+      branch: 'main',
+      xlsxPath: 'spellingwordcards.xlsx',
+    },
+    // 新しいシート名の付け方（Vol.10 の次は Vol.11）
+    sheetPrefix: 'Vol.',
+  },
 };
